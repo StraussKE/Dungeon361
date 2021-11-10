@@ -116,6 +116,10 @@ namespace MatchGame
             LookItUp.SetValue(Grid.ColumnProperty, MAX_COL);
         }
 
-        
+        private void EnterRoom_Click(object sender, RoutedEventArgs e)
+        {
+            // do stuff
+        }
+    }
     
 }

@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+*.json
+/request.txt
+/DictScrape/.idea/DictScrape.iml
+/DictScrape/.idea
+/DictScrape/request.txt

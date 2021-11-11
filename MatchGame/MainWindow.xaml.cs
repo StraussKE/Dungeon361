@@ -12,6 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.IO;
+using System.Diagnostics;
 
 namespace MatchGame
 {
@@ -100,7 +102,7 @@ namespace MatchGame
                     roomContents.SetValue(Grid.RowProperty, row);
                     roomContents.BorderThickness = new Thickness(0);
                     roomContents.Background = new SolidColorBrush(Colors.Tan);
-                    roomContents.Click += new RoutedEventHandler(this.EnterRoom_Click);
+                    roomContents.Click += new RoutedEventHandler(EnterRoom_Click);
                     _ = map.Children.Add(roomContents);
                 }
             }
@@ -122,8 +124,8 @@ namespace MatchGame
 
             Dictionary<string, string> symbolNamesDict = new Dictionary<string, string>()
             {
-                { "🦄", "Corrupted Unicorn"}, {"ᓚᘏᗢ", "Sphinx"}, { "🕷", "Spider"},
-                {"👻", "Ghost"}, {"🍌", "banana"}, {"🎈", "mysterious balloon"},
+                { "🦄", "unicorn"}, {"ᓚᘏᗢ", "sphinx"}, { "🕷", "spider"},
+                {"👻", "ghost"}, {"🍌", "banana"}, {"🎈", "balloon"},
                 { "📘", "mystical tome" }, {"🏹", "longbow" }, {"🗡", "sword" },
                 { "🛡", "shield"}, {"💣","bomb"}, {"🕯", "candle"}
             };
@@ -148,13 +150,11 @@ namespace MatchGame
             {
                 string dictLookup;
                 symbolNamesDict.TryGetValue(room.Content.ToString(), out dictLookup);
-                Button dictCall = new Button();
-                dictCall.Content = dictLookup;
                 inTheRoom = "You've found a " + dictLookup;
                 LookUpText.Text = "Click to look up the meaning of " + dictLookup;
                 LookItUp.Tag = dictLookup;
                 LookItUp.BorderThickness = new Thickness(2);
-                LookItUp.Click += new RoutedEventHandler(this.LookUp_Click);
+                LookItUp.Click += new RoutedEventHandler(LookUp_Click);
             }
             InfoBox.Text = inTheRoom;
             InfoBox.FontSize = 20;
@@ -163,7 +163,52 @@ namespace MatchGame
         private void LookUp_Click(object sender, RoutedEventArgs e)
         {
             Button request = sender as Button;
-            // connect to dictionary service
+            string definition = CheckDict(request.Tag.ToString());
+            InfoBox.Text = definition;
+        }
+
+        private string CheckDict(string searchTerm)
+        {
+            string pyPath = @"C:\Python39\python.exe";
+
+            string workingDirectory = @"D:\GitRepos\C#\Learning Gui\Matchgame\MatchGame\";
+
+            string serviceLocation = "DictScrape\\dictionaryService.py";
+            
+            string outfileName = "request.txt";
+
+            string infileName = searchTerm + ".json";
+
+            WriteTxt(workingDirectory + outfileName, searchTerm);
+            ProcessStartInfo lookupStartInfo = new ProcessStartInfo()
+            {
+                WorkingDirectory = workingDirectory,
+                FileName = pyPath,
+                Arguments = serviceLocation,
+                //RedirectStandardOutput = true,
+                //UseShellExecute = false,
+                // CreateNoWindow = true
+            };
+
+            string defined = "";
+
+            Process lookup = Process.Start(lookupStartInfo);
+            if (lookup != null)
+            {
+                lookup.WaitForExit();
+                defined = File.ReadAllText(workingDirectory + infileName);
+            }
+            else
+            {
+                defined = "An Error Occurred";
+            }
+            
+            return defined;
+        }
+
+        private void WriteTxt(string filepath, string word)
+        {
+            File.WriteAllText(filepath, word);
         }
     }
 }

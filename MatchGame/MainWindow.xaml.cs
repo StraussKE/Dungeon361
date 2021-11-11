@@ -118,8 +118,52 @@ namespace MatchGame
 
         private void EnterRoom_Click(object sender, RoutedEventArgs e)
         {
-            // do stuff
+            Button room = sender as Button;
+
+            Dictionary<string, string> symbolNamesDict = new Dictionary<string, string>()
+            {
+                { "🦄", "Corrupted Unicorn"}, {"ᓚᘏᗢ", "Sphinx"}, { "🕷", "Spider"},
+                {"👻", "Ghost"}, {"🍌", "banana"}, {"🎈", "mysterious balloon"},
+                { "📘", "mystical tome" }, {"🏹", "longbow" }, {"🗡", "sword" },
+                { "🛡", "shield"}, {"💣","bomb"}, {"🕯", "candle"}
+            };
+
+            string inTheRoom;
+
+            if (room.Tag == null || room.Tag.ToString() != "show")
+            {
+                room.Content = room.Tag;
+                room.Tag = "show";
+            }
+
+            if (room.Content == null)
+            {
+                inTheRoom = "This room is empty";
+            }
+            else if (room.Content.ToString() == PLAYER)
+            {
+                inTheRoom = "You gaze admiringly upon yourself";
+            }
+            else
+            {
+                string dictLookup;
+                symbolNamesDict.TryGetValue(room.Content.ToString(), out dictLookup);
+                Button dictCall = new Button();
+                dictCall.Content = dictLookup;
+                inTheRoom = "You've found a " + dictLookup;
+                LookUpText.Text = "Click to look up the meaning of " + dictLookup;
+                LookItUp.Tag = dictLookup;
+                LookItUp.BorderThickness = new Thickness(2);
+                LookItUp.Click += new RoutedEventHandler(this.LookUp_Click);
+            }
+            InfoBox.Text = inTheRoom;
+            InfoBox.FontSize = 20;
+        }
+
+        private void LookUp_Click(object sender, RoutedEventArgs e)
+        {
+            Button request = sender as Button;
+            // connect to dictionary service
         }
     }
-    
 }

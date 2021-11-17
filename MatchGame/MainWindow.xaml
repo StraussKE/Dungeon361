@@ -30,7 +30,7 @@
         <Border x:Name="Exterior" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="10" Grid.RowSpan="5"/>
         <Border x:Name="Info" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="10" Grid.Row="5"/>
         <TextBlock x:Name="InfoBox"></TextBlock>
-        <Button x:Name="LookItUp" Background="Tan" BorderBrush="Brown" BorderThickness="0">
+        <Button x:Name="LookItUp" Background="SandyBrown" BorderBrush="Brown" BorderThickness="0">
             <TextBlock x:Name="LookUpText" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
         </Button>
     </Grid>

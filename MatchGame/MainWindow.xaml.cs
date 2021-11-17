@@ -17,123 +17,143 @@ using System.Diagnostics;
 
 namespace MatchGame
 {
+
+    public static class Constants
+    {
+        public const int MAX_ROW = 5;
+        public const int MAX_COL = 10;
+    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        const int MAX_COL = 10;
-        const int MAX_ROW = 5;
-
         const string PLAYER = "🧙‍";
+        const int MONSTER_COUNT = 3;
+        const int LOOT_COUNT = 5;
 
         int [] playerLoc = new int[2]; // col, row
+        Room[,] dungeon;
 
-        Random random = new Random();
+        static Random random = new Random();
 
         public MainWindow()
         {
             InitializeComponent();
+            MakeBoard();
             SetUpGame();
+            SetUpInfoBox();
+            OpenRooms(playerLoc[0], playerLoc[1]);
+            ConnectDictService();
+        }
+
+        private void MakeBoard()
+        {
+            dungeon = new Room[Constants.MAX_COL, Constants.MAX_ROW];
+            for (int col = 0; col < Constants.MAX_COL; col++)
+            {
+                for (int row = 0; row < Constants.MAX_ROW; row++)
+                {
+                    dungeon[col, row] = new Room(col, row);
+                    AddClicks(dungeon[col, row].Contents);
+                    _ = map.Children.Add(dungeon[col, row].Contents);
+                    _ = map.Children.Add(dungeon[col, row].Walls);
+                }
+            }
+        }
+
+        private void AddClicks(Button roomContents)
+        {
+            roomContents.Click += new RoutedEventHandler(EnterRoom_Click);
+            roomContents.IsEnabled = false;
         }
 
         private void SetUpGame()
+        {
+            AddPlayer();
+            AddExit();
+            AddMonsters(MONSTER_COUNT);
+            AddLoot(LOOT_COUNT);
+        }
+
+        private Button FindEmpty()
+        {
+            Button emptyCell = null;
+            while (emptyCell == null || emptyCell.Tag.ToString() == "show")
+            {
+                emptyCell = dungeon[random.Next(Constants.MAX_COL), random.Next(Constants.MAX_ROW)].Contents;
+            }
+            return emptyCell;
+        }
+
+        private void AddPlayer()
+        {
+            playerLoc[0] = random.Next(Constants.MAX_COL);
+            playerLoc[1] = random.Next(Constants.MAX_ROW);
+
+            Button playerRoom = dungeon[playerLoc[0], playerLoc[1]].Contents;
+            playerRoom.Tag = "show";
+            playerRoom.Content = PLAYER;
+            playerRoom.Foreground = new SolidColorBrush(Colors.Blue);
+            playerRoom.IsEnabled = true;
+        }
+
+        private void AddExit()
+        {
+            Button exitLocation = FindEmpty();
+            exitLocation.Tag = "EXIT";
+        }
+
+        private void AddMonsters(int quantity)
         {
             List<string> monsters = new List<string>()
             {
                 "ᓚᘏᗢ","👻","🕷", "🦄"
             };
 
+            Button monsterCell;
+
+            for (int i = 0; i < quantity; i++)
+            {
+                monsterCell = FindEmpty();
+                monsterCell.Tag = monsters[random.Next(monsters.Count)];
+                monsterCell.Foreground = new SolidColorBrush(Colors.Red);
+            }
+        }
+
+        private void AddLoot(int quantity)
+        {
             List<string> resources = new List<string>()
             {
                 "🍌", "🎈", "📘", "🏹", "🗡", "🛡", "💣","🕯"
             };
 
-            // string death = "☠";
+            Button lootCell;
 
-            for (int col = 0; col < MAX_COL; col++)
+            for (int i = 0; i < quantity; i++)
             {
-                for (int row = 0; row < MAX_ROW; row++)
-                {
-                    // stuff
-                    int north = col == 0 ? 0 : random.Next(2);
-                    int south = col == MAX_COL - 1 ? 0 : random.Next(2);
-                    int east = row == MAX_ROW ? 0 : random.Next(2);
-                    int west = row == 0 ? 0 : random.Next(2);
-
-                    Border roomWalls = new Border
-                    {
-                        BorderThickness = new Thickness(west, north, east, south),
-                        BorderBrush = new SolidColorBrush(Colors.Black)
-                    };
-                    roomWalls.SetValue(Grid.ColumnProperty, col);
-                    roomWalls.SetValue(Grid.RowProperty, row);
-                    _ = map.Children.Add(roomWalls);
-
-                    Button roomContents = new Button();
-                    int flat = Flatten(col, row);
-                    if (flat == 0)
-                    {
-                        roomContents.Tag = "show";
-                        roomContents.Content = PLAYER;
-                        roomContents.Foreground = new SolidColorBrush(Colors.Blue);
-                        roomContents.Click += new RoutedEventHandler(EnterRoom_Click);
-                        playerLoc[0] = col;
-                        playerLoc[1] = row;
-                        roomContents.IsEnabled = true;
-                    }
-                    // monster gen
-                    else
-                    {
-                        if (flat % 5 == 0)
-                        {
-                            int selection = random.Next(monsters.Count);
-                            roomContents.Tag = monsters[selection];
-                            roomContents.Foreground = new SolidColorBrush(Colors.Red);
-                        }
-                        // item gen
-                        else if (flat % 7 == 0)
-                        {
-                            int selection = random.Next(resources.Count);
-                            roomContents.Tag = resources[selection];
-                            roomContents.Foreground = new SolidColorBrush(Colors.Green);
-                        }
-                        //roomContents.Content = "?";
-                        roomContents.Content = "" + flat;
-                        roomContents.IsEnabled = false;
-                    }
-                    roomContents.Name = "room" + flat.ToString();
-                    roomContents.FontSize = 30;
-                    roomContents.Height = 76;
-                    roomContents.Width = 76;
-                    roomContents.SetValue(Grid.ColumnProperty, col);
-                    roomContents.SetValue(Grid.RowProperty, row);
-                    roomContents.BorderThickness = new Thickness(0);
-                    roomContents.Background = new SolidColorBrush(Colors.Tan);
-                    roomContents.Click += new RoutedEventHandler(EnterRoom_Click);
-
-                    
-                    _ = map.Children.Add(roomContents);
-                }
+                lootCell = FindEmpty();
+                lootCell.Tag = resources[random.Next(resources.Count)];
+                lootCell.Foreground = new SolidColorBrush(Colors.Green);
             }
+        }
 
-            OpenRooms(playerLoc[0], playerLoc[1]);
-
-            LookItUp.Click += new RoutedEventHandler(LookUp_Click);
+        private void SetUpInfoBox()
+        {
             InfoBox.Text = "Welcome to the Dungeon!!!";
             InfoBox.Foreground = new SolidColorBrush(Colors.Brown);
             InfoBox.FontSize = 50;
             InfoBox.VerticalAlignment = VerticalAlignment.Center;
             InfoBox.HorizontalAlignment = HorizontalAlignment.Center;
-            InfoBox.SetValue(Grid.RowProperty, MAX_ROW);
-            InfoBox.SetValue(Grid.ColumnSpanProperty, MAX_COL - 1);
-            LookItUp.SetValue(Grid.RowProperty, MAX_ROW);
-            LookItUp.SetValue(Grid.ColumnProperty, MAX_COL);
+            InfoBox.SetValue(Grid.RowProperty, Constants.MAX_ROW);
+            InfoBox.SetValue(Grid.ColumnSpanProperty, Constants.MAX_COL - 2);
         }
 
-        private int Flatten(int col, int row)
+        private void ConnectDictService()
         {
-            return col + row * MAX_COL;
+            LookItUp.Click += new RoutedEventHandler(LookUp_Click);
+            LookItUp.SetValue(Grid.RowProperty, Constants.MAX_ROW);
+            LookItUp.SetValue(Grid.ColumnProperty, Constants.MAX_COL);
         }
 
         private void EnterRoom_Click(object sender, RoutedEventArgs e)
@@ -222,35 +242,28 @@ namespace MatchGame
         private void OpenRooms(int col, int row)
         {
             List<Button> openlist = new List<Button>();
+
             if(col != 0)
             {
-                int westCoord = Flatten(col - 1, row);
-                string roomName = "room" + westCoord;
-                Button west = map.Children.OfType<Button>().FirstOrDefault(btn => btn.Name == roomName);
-                openlist.Add(west);
+                openlist.Add(dungeon[col-1, row].Contents);
             }
-            if (col != MAX_COL - 1)
+
+            if (col != Constants.MAX_COL - 1)
             {
-                int eastCoord = Flatten(col + 1, row);
-                string roomName = "room" + eastCoord;
-                Button east = map.Children.OfType<Button>().FirstOrDefault(btn => btn.Name == roomName);
-                openlist.Add(east);
+                openlist.Add(dungeon[col + 1, row].Contents);
             }
+
             if (row != 0)
             {
-                int northCoord = Flatten(col, row - 1);
-                string roomName = "room" + northCoord;
-                Button north = map.Children.OfType<Button>().FirstOrDefault(btn => btn.Name == roomName);
-                openlist.Add(north);
+                openlist.Add(dungeon[col, row - 1].Contents);
             }
-            if (row != MAX_ROW - 1)
+
+            if (row != Constants.MAX_ROW - 1)
             {
-                int southCoord = Flatten(col, row + 1);
-                string roomName = "room" + southCoord;
-                Button south = map.Children.OfType<Button>().FirstOrDefault(btn=> btn.Name == roomName);
-                openlist.Add(south);
+                openlist.Add(dungeon[col, row + 1].Contents);
             }
-            foreach(Button room in openlist)
+
+            foreach (Button room in openlist)
             {
                 if(!room.IsEnabled)
                 {

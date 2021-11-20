@@ -76,10 +76,8 @@ namespace Dungeon361
                     int roomNumber = Flatten(col, row);
                     Button newRoom = BuildRoom(roomNumber);
                     Border roomWalls = ErectWalls(roomNumber, col, row);
-                    SetMapCoordinates(newRoom, col, row);
-                    SetMapCoordinates(roomWalls, col, row);
-                    _ = map.Children.Add(newRoom);
-                    _ = map.Children.Add(roomWalls);
+                    PositionOnMap(roomWalls, col, row);
+                    PositionOnMap(newRoom, col, row);
                 }
             }
         }
@@ -120,15 +118,11 @@ namespace Dungeon361
             someWalls.DrawWalls(north: north, south: south, east: east, west: west);
         }
 
-        private void SetMapCoordinates(DependencyObject thing, int col, int row)
+        private void PositionOnMap(UIElement thing, int col, int row)
         {
             thing.SetValue(Grid.RowProperty, row);
             thing.SetValue(Grid.ColumnProperty, col);
-        }
-
-        private void AddToMap(UIElement element)
-        {
-            _ = map.Children.Add(element);
+            _ = map.Children.Add(thing);
         }
 
         private void PopupateDungeon()
@@ -173,7 +167,7 @@ namespace Dungeon361
 
         private void AddMonsters(int quantity)
         {
-            List<string> monsters = monsterDict.Keys.AsQueryable().ToList<string>();
+            List<string> monsters = monsterDict.Keys.AsQueryable().ToList();
             Button monsterCell;
 
             for (int i = 0; i < quantity; i++)

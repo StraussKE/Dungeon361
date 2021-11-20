@@ -2,7 +2,7 @@
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace MatchGame
+namespace Dungeon361
 {
     public class RoomWalls : Border
     {

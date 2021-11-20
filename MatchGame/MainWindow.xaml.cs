@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using System.IO;
 using System.Diagnostics;
 
-namespace MatchGame
+namespace Dungeon361
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -30,7 +30,7 @@ namespace MatchGame
         private const int LOOT_COUNT = 5;
 
         private const string PYTHON_PATH = @"C:\Python39\python.exe";
-        private const string PROJ_WORKING_DIR = @"D:\GitRepos\C#\Learning Gui\Matchgame\MatchGame\";
+        private const string PROJ_WORKING_DIR = @"D:\GitRepos\C#\Learning Gui\Dungeon361\Dungeon361\";
         private const string DICT_SVC_LOC = "DictScrape\\dictionaryService.py";
         private const string DICT_SVC_REQUEST_FILENAME = "request.txt";
 
@@ -69,19 +69,17 @@ namespace MatchGame
 
         private void SetUpDungeonUIElements()
         {
-            List<UIElement> gridElements = new List<UIElement>();
             for (int row = 0; row < MAX_ROW; row++)
             {
                 for (int col = 0; col < MAX_COL; col++)
                 {
                     int roomNumber = Flatten(col, row);
-                    gridElements.Add(BuildRoom(roomNumber));
-                    gridElements.Add(ErectWalls(roomNumber, col, row));
-                    foreach (UIElement element in gridElements)
-                    {
-                        SetMapCoordinates(element, col, row);
-                        AddToMap(element);
-                    }
+                    Button newRoom = BuildRoom(roomNumber);
+                    Border roomWalls = ErectWalls(roomNumber, col, row);
+                    SetMapCoordinates(newRoom, col, row);
+                    SetMapCoordinates(roomWalls, col, row);
+                    _ = map.Children.Add(newRoom);
+                    _ = map.Children.Add(roomWalls);
                 }
             }
         }
@@ -126,7 +124,6 @@ namespace MatchGame
         {
             thing.SetValue(Grid.RowProperty, row);
             thing.SetValue(Grid.ColumnProperty, col);
-
         }
 
         private void AddToMap(UIElement element)

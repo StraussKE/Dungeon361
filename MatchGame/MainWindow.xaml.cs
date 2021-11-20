@@ -17,85 +17,145 @@ using System.Diagnostics;
 
 namespace MatchGame
 {
-
-    public static class Constants
-    {
-        public const int MAX_ROW = 5;
-        public const int MAX_COL = 10;
-    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        const string PLAYER = "🧙‍";
-        const int MONSTER_COUNT = 3;
-        const int LOOT_COUNT = 5;
+        private const string PLAYER = "🧙‍";
+        private const int MAX_ROW = 5;
+        private const int MAX_COL = 10;
+        private const int TOTAL_ROOMS = MAX_COL + MAX_ROW;
+        private const int MONSTER_COUNT = 3;
+        private const int LOOT_COUNT = 5;
 
-        int [] playerLoc = new int[2]; // col, row
-        Room[,] dungeon;
+        private const string PYTHON_PATH = @"C:\Python39\python.exe";
+        private const string PROJ_WORKING_DIR = @"D:\GitRepos\C#\Learning Gui\Matchgame\MatchGame\";
+        private const string DICT_SVC_LOC = "DictScrape\\dictionaryService.py";
+        private const string DICT_SVC_REQUEST_FILENAME = "request.txt";
+
+        static Dictionary<string, string> monsterDict = new Dictionary<string, string>()
+        {
+            { "🦄", "unicorn"}, {"ᓚᘏᗢ", "sphinx"}, { "🕷", "spider"}, {"👻", "ghost"},
+        };
+
+        private static Dictionary<string, string> lootDict = new Dictionary<string, string>()
+        {
+            {"🍌", "banana"}, {"🎈", "balloon"}, { "📘", "tome" }, {"🏹", "longbow" },
+            {"🗡", "sword" }, { "🛡", "shield"}, {"💣","bomb"}, {"🕯", "candle"}
+        };
+        private static readonly Dictionary<string, string> playerDict = new Dictionary<string, string>()
+        {
+            { "🧙‍", "wizard" },
+        };
+
+        static readonly List<Dictionary<string, string>> dictList = new List<Dictionary<string, string>>()
+        {
+            monsterDict, lootDict, playerDict
+        };
+
+        private Button playerLoc;
 
         static Random random = new Random();
 
         public MainWindow()
         {
             InitializeComponent();
-            MakeBoard();
-            SetUpGame();
-            SetUpInfoBox();
-            OpenRooms(playerLoc[0], playerLoc[1]);
+            SetUpDungeonUIElements();
+            PopupateDungeon();
+            OpenAdjacentRooms(playerLoc);
             ConnectDictService();
         }
 
-        private void MakeBoard()
+        private void SetUpDungeonUIElements()
         {
-            dungeon = new Room[Constants.MAX_COL, Constants.MAX_ROW];
-            for (int col = 0; col < Constants.MAX_COL; col++)
+            List<UIElement> gridElements = new List<UIElement>();
+            for (int row = 0; row < MAX_ROW; row++)
             {
-                for (int row = 0; row < Constants.MAX_ROW; row++)
+                for (int col = 0; col < MAX_COL; col++)
                 {
-                    dungeon[col, row] = new Room(col, row);
-                    AddClicks(dungeon[col, row].Contents);
-                    _ = map.Children.Add(dungeon[col, row].Contents);
-                    _ = map.Children.Add(dungeon[col, row].Walls);
+                    int roomNumber = Flatten(col, row);
+                    gridElements.Add(BuildRoom(roomNumber));
+                    gridElements.Add(ErectWalls(roomNumber, col, row));
+                    foreach (UIElement element in gridElements)
+                    {
+                        SetMapCoordinates(element, col, row);
+                        AddToMap(element);
+                    }
                 }
             }
         }
 
-        private void AddClicks(Button roomContents)
+        private int Flatten(int col, int row)
+        {
+            return col + (row * MAX_COL);
+        }
+
+        private Button BuildRoom(int roomNumber)
+        {
+            Button aRoom = new EmptyRoom(roomNumber);
+            AddRoomClicks(aRoom);
+            return aRoom;
+        }
+
+        private void AddRoomClicks(Button roomContents)
         {
             roomContents.Click += new RoutedEventHandler(EnterRoom_Click);
             roomContents.IsEnabled = false;
         }
 
-        private void SetUpGame()
+        private Border ErectWalls(int roomNumber, int col, int row)
+        {
+            RoomWalls someWalls = new RoomWalls(roomNumber);
+            PositionWalls(someWalls, col, row);
+            return someWalls;
+        }
+
+        private void PositionWalls(RoomWalls someWalls, int col, int row)
+        {
+            //TODO: replace with file call, will be able to remove col/row params
+            int north = col == 0 ? 0 : random.Next(2);
+            int south = col == MAX_COL - 1 ? 0 : random.Next(2);
+            int east = row == MAX_ROW ? 0 : random.Next(2);
+            int west = row == 0 ? 0 : random.Next(2);
+
+            someWalls.DrawWalls(north: north, south: south, east: east, west: west);
+        }
+
+        private void SetMapCoordinates(DependencyObject thing, int col, int row)
+        {
+            thing.SetValue(Grid.RowProperty, row);
+            thing.SetValue(Grid.ColumnProperty, col);
+
+        }
+
+        private void AddToMap(UIElement element)
+        {
+            _ = map.Children.Add(element);
+        }
+
+        private void PopupateDungeon()
         {
             AddPlayer();
             AddExit();
             AddMonsters(MONSTER_COUNT);
             AddLoot(LOOT_COUNT);
-        }
-
-        private Button FindEmpty()
-        {
-            Button emptyCell = null;
-            while (emptyCell == null || emptyCell.Tag.ToString() == "show")
-            {
-                emptyCell = dungeon[random.Next(Constants.MAX_COL), random.Next(Constants.MAX_ROW)].Contents;
-            }
-            return emptyCell;
+            SetUpInfoBox();
         }
 
         private void AddPlayer()
         {
-            playerLoc[0] = random.Next(Constants.MAX_COL);
-            playerLoc[1] = random.Next(Constants.MAX_ROW);
+            string startingLocation = MakeRoomName(random.Next(MAX_COL), random.Next(MAX_ROW));
+            playerLoc = FindRoom(startingLocation);
+            playerLoc.Content = PLAYER;
+            playerLoc.Tag = "show";
+            playerLoc.Foreground = new SolidColorBrush(Colors.Blue);
+            playerLoc.IsEnabled = true;
+        }
 
-            Button playerRoom = dungeon[playerLoc[0], playerLoc[1]].Contents;
-            playerRoom.Tag = "show";
-            playerRoom.Content = PLAYER;
-            playerRoom.Foreground = new SolidColorBrush(Colors.Blue);
-            playerRoom.IsEnabled = true;
+        private Button FindRoom(string roomName)
+        {
+            return map.Children.OfType<Button>().FirstOrDefault(room => room.Name == roomName);
         }
 
         private void AddExit()
@@ -104,13 +164,19 @@ namespace MatchGame
             exitLocation.Tag = "EXIT";
         }
 
+        private Button FindEmpty()
+        {
+            Button emptyCell = null;
+            while (emptyCell == null || emptyCell.Tag != null)
+            {
+                emptyCell = FindRoom("Room" + random.Next(TOTAL_ROOMS));
+            }
+            return emptyCell;
+        }
+
         private void AddMonsters(int quantity)
         {
-            List<string> monsters = new List<string>()
-            {
-                "ᓚᘏᗢ","👻","🕷", "🦄"
-            };
-
+            List<string> monsters = monsterDict.Keys.AsQueryable().ToList<string>();
             Button monsterCell;
 
             for (int i = 0; i < quantity; i++)
@@ -145,59 +211,124 @@ namespace MatchGame
             InfoBox.FontSize = 50;
             InfoBox.VerticalAlignment = VerticalAlignment.Center;
             InfoBox.HorizontalAlignment = HorizontalAlignment.Center;
-            InfoBox.SetValue(Grid.RowProperty, Constants.MAX_ROW);
-            InfoBox.SetValue(Grid.ColumnSpanProperty, Constants.MAX_COL - 2);
-        }
-
-        private void ConnectDictService()
-        {
-            LookItUp.Click += new RoutedEventHandler(LookUp_Click);
-            LookItUp.SetValue(Grid.RowProperty, Constants.MAX_ROW);
-            LookItUp.SetValue(Grid.ColumnProperty, Constants.MAX_COL);
+            InfoBox.SetValue(Grid.RowProperty, MAX_ROW);
+            InfoBox.SetValue(Grid.ColumnSpanProperty, MAX_COL - 2);
         }
 
         private void EnterRoom_Click(object sender, RoutedEventArgs e)
         {
             Button room = sender as Button;
-            int row = (int)room.GetValue(Grid.RowProperty);
-            int col = (int)room.GetValue(Grid.ColumnProperty);
-            OpenRooms(col, row);
 
-            Dictionary<string, string> symbolNamesDict = new Dictionary<string, string>()
+            RevealContents(room);
+            OpenAdjacentRooms(room);
+
+            string whatHaveWeHere = room.Content == null ? "" : GetSymbolString(room.Content.ToString());
+            InfoBoxUpdate(whatHaveWeHere);
+            if (whatHaveWeHere != "")
             {
-                { "🦄", "unicorn"}, {"ᓚᘏᗢ", "sphinx"}, { "🕷", "spider"},
-                {"👻", "ghost"}, {"🍌", "banana"}, {"🎈", "balloon"},
-                { "📘", "mystical tome" }, {"🏹", "longbow" }, {"🗡", "sword" },
-                { "🛡", "shield"}, {"💣","bomb"}, {"🕯", "candle"}
+                LookItUpButtonUpdate(whatHaveWeHere);
+            }
+        }
+
+        private void OpenAdjacentRooms(Button aRoom)
+        {
+            Dictionary<string, int> coords = GetGridCoords(aRoom);
+            List<string> roomsToOpen = GetAdjacentNames(coords);
+            foreach (string roomName in roomsToOpen)
+            {
+                Button adjRoom = FindRoom(roomName);
+                if (!adjRoom.IsEnabled)
+                {
+                    adjRoom.IsEnabled = true;
+                }
+            }
+        }
+
+        private Dictionary<string, int> GetGridCoords(DependencyObject thing)
+        {
+            return new Dictionary<string, int>
+            {
+                { "row", (int)thing.GetValue(Grid.RowProperty)},
+                { "col", (int)thing.GetValue(Grid.ColumnProperty)},
             };
 
-            string inTheRoom;
+        }
 
+        private List<string> GetAdjacentNames(Dictionary<string, int> coords)
+        {
+            List<string> roomList = new List<string>();
+
+            if (coords["col"] != 0)
+            {
+                roomList.Add(MakeRoomName(coords["col"] - 1, coords["row"]));
+            }
+
+            if (coords["col"] != MAX_COL - 1)
+            {
+                roomList.Add(MakeRoomName(coords["col"] + 1, coords["row"]));
+            }
+
+            if (coords["row"] != 0)
+            {
+                roomList.Add(MakeRoomName(coords["col"], coords["row"] - 1));
+            }
+
+            if (coords["row"] != MAX_ROW - 2)
+            {
+                roomList.Add(MakeRoomName(coords["col"], coords["row"] + 1));
+            }
+            return roomList;
+        }
+
+        private string MakeRoomName(int col, int row)
+        {
+            return "Room" + Flatten(col, row);
+        }
+
+        private void RevealContents(Button room)
+        {
             if (room.Tag == null || room.Tag.ToString() != "show")
             {
                 room.Content = room.Tag;
                 room.Tag = "show";
             }
+        }
 
-            if (room.Content == null)
+        private string GetSymbolString(string lookingfor)
+        {
+            string foundit = "";
+            foreach (Dictionary<string, string> dict in dictList)
             {
-                inTheRoom = "This room is empty";
+                if (dict.TryGetValue(lookingfor, out foundit))
+                {
+                    break;
+                }
             }
-            else if (room.Content.ToString() == PLAYER)
-            {
-                inTheRoom = "You gaze admiringly upon yourself";
-            }
-            else
-            {
-                string dictLookup;
-                symbolNamesDict.TryGetValue(room.Content.ToString(), out dictLookup);
-                inTheRoom = "You've found a " + dictLookup;
-                LookUpText.Text = "Click to look up the meaning of " + dictLookup;
-                LookItUp.Tag = dictLookup;
-                LookItUp.BorderThickness = new Thickness(2);
-            }
-            InfoBox.Text = inTheRoom;
+            return foundit;
+        }
+
+        private void InfoBoxUpdate(string roomContents)
+        {
+            InfoBox.Text = roomContents == ""
+                ? "This room is empty"
+                : roomContents == "wizard" ? "You're a wizard, Harry!" : "You've found a " + roomContents;
             InfoBox.FontSize = 20;
+        }
+
+        private void LookItUpButtonUpdate(string searchTerm)
+        {
+            if (!LookItUp.IsEnabled)
+            {
+                LookItUp.IsEnabled = true;
+            }
+            LookUpText.Text = "Click to look up the meaning of " + searchTerm;
+            LookItUp.Tag = searchTerm;
+        }
+
+        private void ConnectDictService()
+        {
+            LookItUp.Click += new RoutedEventHandler(LookUp_Click);
+            LookItUp.IsEnabled = false;
         }
 
         private void LookUp_Click(object sender, RoutedEventArgs e)
@@ -207,69 +338,39 @@ namespace MatchGame
             InfoBox.Text = definition;
         }
 
-        private string CheckDict(string searchTerm) {
-            string pyPath = @"C:\Python39\python.exe";
-            string workingDirectory = @"D:\GitRepos\C#\Learning Gui\Matchgame\MatchGame\";
-            string serviceLocation = "DictScrape\\dictionaryService.py";
-            string outfileName = "request.txt";
-            string infileName = searchTerm + ".json";
-
-            WriteTxt(workingDirectory + outfileName, searchTerm);
-            ProcessStartInfo lookupStartInfo = new ProcessStartInfo() {
-                WorkingDirectory = workingDirectory,
-                FileName = pyPath,
-                Arguments = serviceLocation,
+        private ProcessStartInfo CreateDictProcessStartInfo()
+        {
+            return new ProcessStartInfo()
+            {
+                WorkingDirectory = PROJ_WORKING_DIR,
+                FileName = PYTHON_PATH,
+                Arguments = DICT_SVC_LOC,
                 CreateNoWindow = true
             };
-
-            string defined;
-
-            Process lookup = Process.Start(lookupStartInfo);
-            if (lookup != null) {
-                lookup.WaitForExit();
-                defined = File.ReadAllText(workingDirectory + infileName);
-            } else {
-                defined = "An Error Occurred";
-            }
-            return defined;
         }
 
-        private void WriteTxt(string filepath, string word)
+        private string RunDictService(ProcessStartInfo svcStartInfo, string searchTerm)
+        {
+            Process lookup = Process.Start(svcStartInfo);
+            if (lookup != null)
+            {
+                lookup.WaitForExit();
+                string infileName = searchTerm + ".json";
+                return File.ReadAllText(PROJ_WORKING_DIR + infileName);
+            }
+            return "An Error Occurred";
+        }
+
+        private string CheckDict(string searchTerm)
+        {
+            WriteRequestTxt(PROJ_WORKING_DIR + DICT_SVC_REQUEST_FILENAME, searchTerm);
+            ProcessStartInfo lookupStartInfo = CreateDictProcessStartInfo();
+            return RunDictService(lookupStartInfo, searchTerm);
+        }
+
+        private void WriteRequestTxt(string filepath, string word)
         {
             File.WriteAllText(filepath, word);
-        }
-
-        private void OpenRooms(int col, int row)
-        {
-            List<Button> openlist = new List<Button>();
-
-            if(col != 0)
-            {
-                openlist.Add(dungeon[col-1, row].Contents);
-            }
-
-            if (col != Constants.MAX_COL - 1)
-            {
-                openlist.Add(dungeon[col + 1, row].Contents);
-            }
-
-            if (row != 0)
-            {
-                openlist.Add(dungeon[col, row - 1].Contents);
-            }
-
-            if (row != Constants.MAX_ROW - 1)
-            {
-                openlist.Add(dungeon[col, row + 1].Contents);
-            }
-
-            foreach (Button room in openlist)
-            {
-                if(!room.IsEnabled)
-                {
-                    room.IsEnabled = true;
-                }
-            }
         }
     }
 }

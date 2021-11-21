@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,7 +26,7 @@ namespace Dungeon361
         private const string PLAYER = "🧙‍";
         private const int MAX_ROW = 5;
         private const int MAX_COL = 10;
-        private const int TOTAL_ROOMS = MAX_COL + MAX_ROW;
+        private const int TOTAL_ROOMS = MAX_COL * MAX_ROW;
         private const int MONSTER_COUNT = 3;
         private const int LOOT_COUNT = 5;
 
@@ -56,7 +57,7 @@ namespace Dungeon361
 
         private Button playerLoc;
 
-        static Random random = new Random();
+        private static readonly Random random = new Random();
 
         public MainWindow()
         {
@@ -264,7 +265,7 @@ namespace Dungeon361
                 roomList.Add(MakeRoomName(coords["col"], coords["row"] - 1));
             }
 
-            if (coords["row"] != MAX_ROW - 2)
+            if (coords["row"] != MAX_ROW - 1)
             {
                 roomList.Add(MakeRoomName(coords["col"], coords["row"] + 1));
             }
@@ -325,8 +326,24 @@ namespace Dungeon361
         private void LookUp_Click(object sender, RoutedEventArgs e)
         {
             Button request = sender as Button;
-            string definition = CheckDict(request.Tag.ToString());
-            InfoBox.Text = definition;
+            string searchTerm = request.Tag.ToString();
+            string definition = CheckDict(searchTerm);
+            List<string> listOfDefinitions = JsonSerializer.Deserialize<List<string>>(definition);
+            DisplayDefinitions(searchTerm, listOfDefinitions);
+        }
+
+        private void DisplayDefinitions(string word, List<string> definitionList)
+        {
+            for (int i = 0; i < definitionList.Count; i++)
+            {
+                string msgBoxOutput = definitionList[i] + "\n\nAre you satisfied with this definition?";
+                MessageBoxResult result = MessageBox.Show(msgBoxOutput, word, MessageBoxButton.YesNo);
+                if (result == MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
+            MessageBox.Show("I'm sorry none of these definitions was what you were looking for.", word);
         }
 
         private ProcessStartInfo CreateDictProcessStartInfo()

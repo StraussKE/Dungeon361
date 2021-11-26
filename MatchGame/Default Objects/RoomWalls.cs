@@ -9,7 +9,7 @@ namespace Dungeon361
         public RoomWalls(int roomNumber)
         {
             Name = "Walls" + roomNumber;
-            Background = new SolidColorBrush(Colors.Tan);
+            Background = new SolidColorBrush(Colors.BlanchedAlmond);
             BorderBrush = new SolidColorBrush(Colors.SaddleBrown);
         }
 

@@ -13,8 +13,9 @@ namespace Dungeon361
             Height = 76;
             Width = 76;
             BorderThickness = new Thickness(0);
-            Background = new SolidColorBrush(Colors.Tan);
+            Background = new SolidColorBrush(Colors.BlanchedAlmond);
             Content = '?';
+            IsHitTestVisible = false;
         }
     }
 }

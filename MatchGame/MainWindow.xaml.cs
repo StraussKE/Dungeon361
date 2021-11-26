@@ -50,7 +50,7 @@ namespace Dungeon361
             { "🧙‍", "wizard" },
         };
 
-        static readonly List<Dictionary<string, string>> dictList = new List<Dictionary<string, string>>()
+        private static readonly List<Dictionary<string, string>> dictList = new List<Dictionary<string, string>>()
         {
             monsterDict, lootDict, playerDict
         };
@@ -58,13 +58,17 @@ namespace Dungeon361
         private Button playerLoc;
 
         private static readonly Random random = new Random();
+        private static SolidColorBrush visitedRoomColor = new SolidColorBrush(Colors.Tan);
+        private static SolidColorBrush monsterColor = new SolidColorBrush(Colors.Red);
+        private static SolidColorBrush lootColor = new SolidColorBrush(Colors.Green);
+        private static SolidColorBrush playerColor = new SolidColorBrush(Colors.Blue);
 
         public MainWindow()
         {
             InitializeComponent();
             SetUpDungeonUIElements();
             PopupateDungeon();
-            OpenAdjacentRooms(playerLoc);
+            ToggleAdjacentRooms(playerLoc, true);
             ConnectDictService();
         }
 
@@ -91,14 +95,8 @@ namespace Dungeon361
         private Button BuildRoom(int roomNumber)
         {
             Button aRoom = new EmptyRoom(roomNumber);
-            AddRoomClicks(aRoom);
+            aRoom.Click += new RoutedEventHandler(EnterRoom_Click);
             return aRoom;
-        }
-
-        private void AddRoomClicks(Button roomContents)
-        {
-            roomContents.Click += new RoutedEventHandler(EnterRoom_Click);
-            roomContents.IsEnabled = false;
         }
 
         private Border ErectWalls(int roomNumber, int col, int row)
@@ -110,6 +108,7 @@ namespace Dungeon361
 
         private void PositionWalls(RoomWalls someWalls, int col, int row)
         {
+            // Dictionary<string, Dictionary<string, bool> = JsonSerializer.Serialize(wallmap.json) <have to file i/o this
             //TODO: replace with file call, will be able to remove col/row params
             int north = col == 0 ? 0 : random.Next(2);
             int south = col == MAX_COL - 1 ? 0 : random.Next(2);
@@ -130,8 +129,8 @@ namespace Dungeon361
         {
             AddPlayer();
             AddExit();
-            AddMonsters(MONSTER_COUNT);
-            AddLoot(LOOT_COUNT);
+            AddToDungeon(MONSTER_COUNT, monsterDict.Keys.AsQueryable().ToList());
+            AddToDungeon(LOOT_COUNT, lootDict.Keys.AsQueryable().ToList());
             SetUpInfoBox();
         }
 
@@ -141,8 +140,9 @@ namespace Dungeon361
             playerLoc = FindRoom(startingLocation);
             playerLoc.Content = PLAYER;
             playerLoc.Tag = "show";
-            playerLoc.Foreground = new SolidColorBrush(Colors.Blue);
-            playerLoc.IsEnabled = true;
+            playerLoc.Foreground = playerColor;
+            playerLoc.IsHitTestVisible = true;
+            playerLoc.Background = visitedRoomColor;
         }
 
         private Button FindRoom(string roomName)
@@ -166,33 +166,14 @@ namespace Dungeon361
             return emptyCell;
         }
 
-        private void AddMonsters(int quantity)
+        private void AddToDungeon(int quantity, List<string> possibleAdditions)
         {
-            List<string> monsters = monsterDict.Keys.AsQueryable().ToList();
-            Button monsterCell;
+            Button emptyCell;
 
             for (int i = 0; i < quantity; i++)
             {
-                monsterCell = FindEmpty();
-                monsterCell.Tag = monsters[random.Next(monsters.Count)];
-                monsterCell.Foreground = new SolidColorBrush(Colors.Red);
-            }
-        }
-
-        private void AddLoot(int quantity)
-        {
-            List<string> resources = new List<string>()
-            {
-                "🍌", "🎈", "📘", "🏹", "🗡", "🛡", "💣","🕯"
-            };
-
-            Button lootCell;
-
-            for (int i = 0; i < quantity; i++)
-            {
-                lootCell = FindEmpty();
-                lootCell.Tag = resources[random.Next(resources.Count)];
-                lootCell.Foreground = new SolidColorBrush(Colors.Green);
+                emptyCell = FindEmpty();
+                emptyCell.Tag = possibleAdditions[random.Next(possibleAdditions.Count)];
             }
         }
 
@@ -210,9 +191,8 @@ namespace Dungeon361
         private void EnterRoom_Click(object sender, RoutedEventArgs e)
         {
             Button room = sender as Button;
-
+            room.Background = visitedRoomColor;
             RevealContents(room);
-            OpenAdjacentRooms(room);
 
             string whatHaveWeHere = room.Content == null ? "" : GetSymbolString(room.Content.ToString());
             InfoBoxUpdate(whatHaveWeHere);
@@ -220,19 +200,52 @@ namespace Dungeon361
             {
                 LookItUpButtonUpdate(whatHaveWeHere);
             }
+            ToggleAdjacentRooms(room, true);
+            MovePlayer(room);
+            room.IsHitTestVisible = true;
         }
 
-        private void OpenAdjacentRooms(Button aRoom)
+        private void MovePlayer(Button room)
+        {
+            if (room == playerLoc)
+            {
+                return;
+            }
+            ToggleAdjacentRooms(playerLoc, false);
+            room.Content = PLAYER + RoomContents(room);
+            playerLoc.Content = null;
+            playerLoc.Foreground = null;
+            playerLoc = room;
+        }
+
+        private string RoomContents(Button room)
+        {
+            if(room.Content == null)
+            {
+                room.Foreground = playerColor;
+            }
+            else if(lootDict.ContainsKey(room.Content.ToString()))
+            {
+                // TODO - add item to player inventory
+                room.Foreground = lootColor;
+            }
+            else if(monsterDict.ContainsKey(room.Content.ToString()))
+            {
+                // TODO - add battle mechanic and click commands
+                room.Foreground = monsterColor;
+                return " | " + room.Content.ToString();
+            }
+            return "";
+        }
+
+        private void ToggleAdjacentRooms(Button aRoom, bool toggleChange)
         {
             Dictionary<string, int> coords = GetGridCoords(aRoom);
-            List<string> roomsToOpen = GetAdjacentNames(coords);
-            foreach (string roomName in roomsToOpen)
+            List<string> roomsToToggle = GetAdjacentNames(coords);
+            foreach (string roomName in roomsToToggle)
             {
                 Button adjRoom = FindRoom(roomName);
-                if (!adjRoom.IsEnabled)
-                {
-                    adjRoom.IsEnabled = true;
-                }
+                adjRoom.IsHitTestVisible = toggleChange;
             }
         }
 
@@ -328,7 +341,7 @@ namespace Dungeon361
             Button request = sender as Button;
             string searchTerm = request.Tag.ToString();
             string definition = CheckDict(searchTerm);
-            List<string> listOfDefinitions = JsonSerializer.Deserialize<List<string>>(definition);
+            List<string> listOfDefinitions = JsonSerializer.Deserialize<List<string>>(definition); // candle broken, need exception handling
             DisplayDefinitions(searchTerm, listOfDefinitions);
         }
 
@@ -343,7 +356,7 @@ namespace Dungeon361
                     return;
                 }
             }
-            MessageBox.Show("I'm sorry none of these definitions was what you were looking for.", word);
+            _ = MessageBox.Show("I'm sorry none of these definitions was what you were looking for.", word);
         }
 
         private ProcessStartInfo CreateDictProcessStartInfo()

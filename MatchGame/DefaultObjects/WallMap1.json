@@ -1,0 +1,302 @@
+{
+  "Walls0": {
+    "west": true,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls1": {
+    "west": true,
+    "north": true,
+    "east": false,
+    "south": true
+  },
+  "Walls2": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls3": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls4": {
+    "west": false,
+    "north": true,
+    "east": false,
+    "south": false
+  },
+  "Walls5": {
+    "west": false,
+    "north": true,
+    "east": false,
+    "south": false
+  },
+  "Walls6": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls7": {
+    "west": true,
+    "north": true,
+    "east": false,
+    "south": false
+  },
+  "Walls8": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls9": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  }, // end row
+  "Walls10": {
+    "west": true,
+    "north": false,
+    "east": true,
+    "south": false
+  },
+  "Walls11": {
+    "west": true,
+    "north": true,
+    "east": false,
+    "south": false
+  },
+  "Walls12": {
+    "west": false,
+    "north": true,
+    "east": false,
+    "south": false
+  },
+  "Walls13": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls14": {
+    "west": true,
+    "north": false,
+    "east": true,
+    "south": false
+  },
+  "Walls15": {
+    "west": true,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls16": {
+    "west": false,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls17": {
+    "west": false,
+    "north": false,
+    "east": true,
+    "south": true
+  },
+  "Walls18": {
+    "west": true,
+    "north": true,
+    "east": false,
+    "south": true
+  },
+  "Walls19": {
+    "west": false,
+    "north": false,
+    "east": true,
+    "south": false
+  }, // end row
+  "Walls20": {
+    "west": true,
+    "north": false,
+    "east": true,
+    "south": false
+  },
+  "Walls21": {
+    "west": true,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls22": {
+    "west": false,
+    "north": false,
+    "east": true,
+    "south": true
+  },
+  "Walls23": {
+    "west": true,
+    "north": false,
+    "east": true,
+    "south": false
+  },
+  "Walls24": {
+    "west": true,
+    "north": false,
+    "east": true,
+    "south": false
+  },
+  "Walls25": {
+    "west": true,
+    "north": true,
+    "east": false,
+    "south": true
+  },
+  "Walls26": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls27": {
+    "west": true,
+    "north": true,
+    "east": false,
+    "south": false
+  },
+  "Walls28": {
+    "west": true,
+    "north": false,
+    "east": false,
+    "south": false
+  },
+  "Walls29": {
+    "west": false,
+    "north": false,
+    "east": true,
+    "south": true
+  }, // end row
+  "Walls30": {
+    "west": true,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls31": {
+    "west": true,
+    "north": false,
+    "east": false,
+    "south": false
+  },
+  "Walls32": {
+    "west": false,
+    "north": true,
+    "east": false,
+    "south": true
+  },
+  "Walls33": {
+    "west": false,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls34": {
+    "west": false,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls35": {
+    "west": false,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls36": {
+    "west": true,
+    "north": false,
+    "east": true,
+    "south": false
+  },
+  "Walls37": {
+    "west": true,
+    "north": false,
+    "east": false,
+    "south": false
+  },
+  "Walls38": {
+    "west": false,
+    "north": false,
+    "east": true,
+    "south": false
+  },
+  "Walls39": {
+    "west": true,
+    "north": true,
+    "east": true,
+    "south": false
+  }, // end row
+  "Walls40": {
+    "west": true,
+    "north": true,
+    "east": true,
+    "south": false
+  },
+  "Walls41": {
+    "west": true,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls42": {
+    "west": false,
+    "north": true,
+    "east": false,
+    "south": true
+  },
+  "Walls43": {
+    "west": false,
+    "north": true,
+    "east": false,
+    "south": true
+  },
+  "Walls44": {
+    "west": false,
+    "north": true,
+    "east": false,
+    "south": true
+  },
+  "Walls45": {
+    "west": false,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls46": {
+    "west": false,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls47": {
+    "west": false,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls48": {
+    "west": false,
+    "north": false,
+    "east": false,
+    "south": true
+  },
+  "Walls49": {
+    "west": false,
+    "north": false,
+    "east": true,
+    "south": true
+  } // end row
+}

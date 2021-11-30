@@ -34,7 +34,7 @@ namespace Dungeon361
         private const string PROJ_WORKING_DIR = @"D:\GitRepos\C#\Learning Gui\Dungeon361\Dungeon361\";
 
         // Predefined Wall Layout
-        private const string WALL_FILE = "WallLayouts\\WallMap1.json";
+        private const string WALL_FILE = "DefaultObjects\\WallMap1.json";
 
         // DictService Files
         private const string PYTHON_PATH = @"C:\Python39\python.exe";
@@ -80,35 +80,17 @@ namespace Dungeon361
 
         private void SetUpDungeonUIElements()
         {
-            List<WallSet> listOfwalls = GetWallList();
-            List<Border> borderSet = CreateBorders(listOfwalls);
-
             for (int row = 0; row < MAX_ROW; row++)
             {
                 for (int col = 0; col < MAX_COL; col++)
                 {
                     int roomNumber = Flatten2DcoordsTo1D(col, row);
                     Button newRoom = BuildRoom(roomNumber);
-                    PositionOnMap(borderSet[0], col, row);
-                    borderSet.RemoveAt(0);
+                    Border roomWalls = ErectWalls(roomNumber, col, row);
+                    PositionOnMap(roomWalls, col, row);
                     PositionOnMap(newRoom, col, row);
                 }
             }
-        }
-
-        private List<WallSet> GetWallList()
-        {
-            string wallMap = File.ReadAllText(PROJ_WORKING_DIR + WALL_FILE);
-            return JsonSerializer.Deserialize<List<WallSet>>(wallMap);
-        }
-        private List<Border> CreateBorders(List<WallSet> listOfWalls)
-        {
-            List<Border> wallBorders = new List<Border>() ;
-            foreach (WallSet wall in listOfWalls)
-            {
-                wallBorders.Append(wall.DrawWalls());
-            }
-            return wallBorders;
         }
 
         private int Flatten2DcoordsTo1D(int col, int row)
@@ -121,6 +103,29 @@ namespace Dungeon361
             Button aRoom = new EmptyRoom(roomNumber);
             aRoom.Click += new RoutedEventHandler(EnterRoom_Click);
             return aRoom;
+        }
+
+        private Border ErectWalls(int roomNumber, int col, int row)
+        {
+            RoomWalls someWalls = new RoomWalls(roomNumber);
+            PositionWalls(someWalls, col, row);
+            return someWalls;
+        }
+
+        private void PositionWalls(RoomWalls someWalls, int col, int row)
+        {
+
+            string wallMap = File.ReadAllText(PROJ_WORKING_DIR + WALL_FILE);
+            List<string> listOfwalls = JsonSerializer.Deserialize<List<string>>(wallMap);
+            Console.WriteLine(listOfwalls);
+            // Dictionary<string, Dictionary<string, bool> = JsonSerializer.Serialize(wallmap.json) <have to file i/o this
+            //TODO: replace with file call, will be able to remove col/row params
+            int north = col == 0 ? 0 : random.Next(2);
+            int south = col == MAX_COL - 1 ? 0 : random.Next(2);
+            int east = row == MAX_ROW ? 0 : random.Next(2);
+            int west = row == 0 ? 0 : random.Next(2);
+
+            someWalls.DrawWalls(north: north, south: south, east: east, west: west);
         }
 
         private void PositionOnMap(UIElement thing, int col, int row)

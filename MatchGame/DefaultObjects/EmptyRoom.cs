@@ -6,7 +6,7 @@ namespace Dungeon361
 {
     public class EmptyRoom : Button
     {
-        public EmptyRoom(int roomNumber)
+        public EmptyRoom(string roomNumber)
         {
             Name = "Room" + roomNumber;
             FontSize = 30;

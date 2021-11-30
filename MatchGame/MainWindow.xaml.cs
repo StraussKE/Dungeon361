@@ -80,35 +80,19 @@ namespace Dungeon361
 
         private void SetUpDungeonUIElements()
         {
-            List<WallSet> listOfwalls = GetWallList();
-            List<Border> borderSet = CreateBorders(listOfwalls);
+            Dictionary<string, Dictionary<string, bool>> listOfWalls = GetWallList();
 
             for (int row = 0; row < MAX_ROW; row++)
             {
                 for (int col = 0; col < MAX_COL; col++)
                 {
-                    int roomNumber = Flatten2DcoordsTo1D(col, row);
+                    string roomNumber = Flatten2DcoordsTo1D(col, row).ToString();
                     Button newRoom = BuildRoom(roomNumber);
-                    PositionOnMap(borderSet[0], col, row);
-                    borderSet.RemoveAt(0);
+                    Border roomWalls = DrawWalls(roomNumber, listOfWalls[roomNumber]);
+                    PositionOnMap(roomWalls, col, row);
                     PositionOnMap(newRoom, col, row);
                 }
             }
-        }
-
-        private List<WallSet> GetWallList()
-        {
-            string wallMap = File.ReadAllText(PROJ_WORKING_DIR + WALL_FILE);
-            return JsonSerializer.Deserialize<List<WallSet>>(wallMap);
-        }
-        private List<Border> CreateBorders(List<WallSet> listOfWalls)
-        {
-            List<Border> wallBorders = new List<Border>() ;
-            foreach (WallSet wall in listOfWalls)
-            {
-                wallBorders.Append(wall.DrawWalls());
-            }
-            return wallBorders;
         }
 
         private int Flatten2DcoordsTo1D(int col, int row)
@@ -116,11 +100,33 @@ namespace Dungeon361
             return col + (row * MAX_COL);
         }
 
-        private Button BuildRoom(int roomNumber)
+        private Button BuildRoom(string roomNumber)
         {
             Button aRoom = new EmptyRoom(roomNumber);
             aRoom.Click += new RoutedEventHandler(EnterRoom_Click);
             return aRoom;
+        }
+
+        private Dictionary<string, Dictionary<string, bool>> GetWallList()
+        {
+            string wallMap = File.ReadAllText(PROJ_WORKING_DIR + WALL_FILE);
+            return JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, bool>>>(wallMap);
+        }
+
+        private Border DrawWalls(string roomNumber, Dictionary<string, bool> wallSet)
+        {
+            Border newRoom = new Border();
+            newRoom.Name = "Wall" + roomNumber;
+            newRoom.BorderThickness = new Thickness()
+            {
+                Left = wallSet["west"] ? 1 : 0,
+                Right = wallSet["east"] ? 1 : 0,
+                Top = wallSet["north"] ? 1 : 0,
+                Bottom = wallSet["south"] ? 1 : 0
+            };
+            newRoom.Background = new SolidColorBrush(Colors.BlanchedAlmond);
+            newRoom.BorderBrush = new SolidColorBrush(Colors.SaddleBrown);
+            return newRoom;
         }
 
         private void PositionOnMap(UIElement thing, int col, int row)

@@ -252,7 +252,8 @@ namespace Dungeon361
         private void ToggleAdjacentRooms(Button aRoom, bool toggleChange)
         {
             Dictionary<string, int> coords = GetGridCoords(aRoom);
-            List<string> roomsToToggle = GetAdjacentNames(coords);
+            Dictionary<string, bool> wallList = WallPositions(Flatten2DcoordsTo1D(coords["col"], coords["row"]));
+            List<string> roomsToToggle = GetAdjacentNames(coords, wallList);
             foreach (string roomName in roomsToToggle)
             {
                 Button adjRoom = FindRoom(roomName);
@@ -270,26 +271,45 @@ namespace Dungeon361
 
         }
 
-        private List<string> GetAdjacentNames(Dictionary<string, int> coords)
+        private Dictionary<string, bool> WallPositions(int roomNumber)
+        {
+            Border wallSet = FindWallSet("Wall" + roomNumber);
+            Dictionary<string, bool> walls = new Dictionary<string, bool>()
+            {
+                {"west", wallSet.BorderThickness.Left.ToString() == "1"},
+                {"north", wallSet.BorderThickness.Top.ToString() == "1"},
+                {"east", wallSet.BorderThickness.Right.ToString() == "1"},
+                {"south", wallSet.BorderThickness.Bottom.ToString() == "1"}
+
+            };
+            return walls;
+        }
+
+        private Border FindWallSet(string wallSetName)
+        {
+            return map.Children.OfType<Border>().FirstOrDefault(room => room.Name == wallSetName);
+        }
+
+        private List<string> GetAdjacentNames(Dictionary<string, int> coords, Dictionary<string, bool> walls)
         {
             List<string> roomList = new List<string>();
 
-            if (coords["col"] != 0)
+            if (!walls["west"])
             {
                 roomList.Add(MakeRoomName(coords["col"] - 1, coords["row"]));
             }
 
-            if (coords["col"] != MAX_COL - 1)
+            if (!walls["east"])
             {
                 roomList.Add(MakeRoomName(coords["col"] + 1, coords["row"]));
             }
 
-            if (coords["row"] != 0)
+            if (!walls["north"])
             {
                 roomList.Add(MakeRoomName(coords["col"], coords["row"] - 1));
             }
 
-            if (coords["row"] != MAX_ROW - 1)
+            if (!walls["south"])
             {
                 roomList.Add(MakeRoomName(coords["col"], coords["row"] + 1));
             }

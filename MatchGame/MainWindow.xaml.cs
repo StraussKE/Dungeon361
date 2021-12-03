@@ -24,7 +24,8 @@ namespace Dungeon361
     public partial class MainWindow : Window
     {
         private const string PLAYER = "🧙‍";
-        private const int MAX_ROW = 5;
+        private const int START_ROW = 1;
+        private const int MAX_ROW = 6;
         private const int MAX_COL = 10;
         private const int TOTAL_ROOMS = MAX_COL * MAX_ROW;
         private const int MONSTER_COUNT = 3;
@@ -82,7 +83,7 @@ namespace Dungeon361
         {
             Dictionary<string, Dictionary<string, bool>> listOfWalls = GetWallList();
 
-            for (int row = 0; row < MAX_ROW; row++)
+            for (int row = START_ROW; row < MAX_ROW; row++)
             {
                 for (int col = 0; col < MAX_COL; col++)
                 {
@@ -142,6 +143,7 @@ namespace Dungeon361
             AddExit();
             AddToDungeon(MONSTER_COUNT, monsterDict.Keys.AsQueryable().ToList());
             AddToDungeon(LOOT_COUNT, lootDict.Keys.AsQueryable().ToList());
+            SetUpHeaderBox();
             SetUpInfoBox();
         }
 
@@ -188,15 +190,26 @@ namespace Dungeon361
             }
         }
 
+        private void SetUpHeaderBox()
+        {
+            HeaderBar.Text = "Welcome to the Dungeon!!!";
+            HeaderBar.Foreground = new SolidColorBrush(Colors.Brown);
+            HeaderBar.FontSize = 50;
+            HeaderBar.VerticalAlignment = VerticalAlignment.Center;
+            HeaderBar.HorizontalAlignment = HorizontalAlignment.Center;
+            HeaderBar.SetValue(Grid.RowProperty, 0);
+            HeaderBar.SetValue(Grid.ColumnSpanProperty, MAX_COL - 1);
+        }
         private void SetUpInfoBox()
         {
-            InfoBox.Text = "Welcome to the Dungeon!!!";
+            InfoBox.Text = "To explore the dungeon, use the mouse to click a room adjacent to your avitar! " +
+                "Remember that you can't walk through walls, so you'll only be able to access some rooms.";
             InfoBox.Foreground = new SolidColorBrush(Colors.Brown);
-            InfoBox.FontSize = 50;
             InfoBox.VerticalAlignment = VerticalAlignment.Center;
             InfoBox.HorizontalAlignment = HorizontalAlignment.Center;
             InfoBox.SetValue(Grid.RowProperty, MAX_ROW);
-            InfoBox.SetValue(Grid.ColumnSpanProperty, MAX_COL - 2);
+            InfoBox.SetValue(Grid.ColumnProperty, 1);
+            InfoBox.SetValue(Grid.ColumnSpanProperty, MAX_COL - 3);
         }
 
         private void EnterRoom_Click(object sender, RoutedEventArgs e)

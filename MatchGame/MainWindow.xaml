@@ -5,33 +5,39 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:Dungeon361"
     mc:Ignorable="d"
-    Title="Dungeon361" Height="530" Width="850">
-    <Grid x:Name="map" Background="BlanchedAlmond" Height="480" HorizontalAlignment="Center" VerticalAlignment="Center">
+    Title="Dungeon361">
+    <Grid x:Name="map" Background="BlanchedAlmond" HorizontalAlignment="Center" VerticalAlignment="Center">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="80"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
+            <ColumnDefinition Width="100"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="80"/>
-            <RowDefinition Height="80"/>
-            <RowDefinition Height="80"/>
-            <RowDefinition Height="80"/>
-            <RowDefinition Height="80"/>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
-        <Border x:Name="Exterior" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="10" Grid.RowSpan="5"/>
-        <Border x:Name="Info" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="9" Grid.Row="5"/>
-        <TextBlock x:Name="InfoBox"></TextBlock>
-        <Button x:Name="LookItUp" Background="tan" BorderBrush="Brown" BorderThickness="0" Grid.Column="10" Grid.Row="5">
+        <Border x:Name="Exterior" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="10" Grid.RowSpan="6"/>
+        <Border x:Name="Header" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="10" Grid.Row="0"/>
+        <TextBlock x:Name="HeaderBar"></TextBlock>
+        <Border x:Name="Info" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="9" Grid.Row="6"/>
+        <TextBlock x:Name="InfoBox" TextWrapping="Wrap"></TextBlock>
+        <Button x:Name="LookItUp" Background="tan" BorderBrush="Brown" BorderThickness="0" Grid.Column="10" Grid.Row="6">
             <TextBlock x:Name="LookUpText" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
+        </Button>
+        <Button x:Name="Engage" Background="tan" BorderBrush="Brown" BorderThickness="0" Grid.Column="0" Grid.Row="6">
+            <TextBlock x:Name="EngageText" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
         </Button>
     </Grid>
 </Window>

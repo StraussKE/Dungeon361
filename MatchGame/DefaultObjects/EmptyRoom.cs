@@ -10,8 +10,8 @@ namespace Dungeon361
         {
             Name = "Room" + roomNumber;
             FontSize = 30;
-            Height = 76;
-            Width = 76;
+            Height = 90;
+            Width = 90;
             BorderThickness = new Thickness(0);
             Background = new SolidColorBrush(Colors.BlanchedAlmond);
             Content = '?';

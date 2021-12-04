@@ -24,6 +24,7 @@ namespace Dungeon361
     public partial class MainWindow : Window
     {
         private const string PLAYER = "🧙‍";
+        private const string DEATH = "☠";
         private const int START_ROW = 1;
         private const int MAX_ROW = 6;
         private const int MAX_COL = 10;
@@ -50,7 +51,7 @@ namespace Dungeon361
         private static Dictionary<string, string> lootDict = new Dictionary<string, string>()
         {
             {"🍌", "banana"}, {"🎈", "balloon"}, { "📘", "tome" }, {"🏹", "longbow" },
-            {"🗡", "sword" }, { "🛡", "shield"}, {"💣","bomb"}, {"🕯", "candle"}
+            {"🗡", "sword" }, { "🛡", "shield"}, {"💣","bomb"},
         };
         private static readonly Dictionary<string, string> playerDict = new Dictionary<string, string>()
         {
@@ -69,6 +70,8 @@ namespace Dungeon361
         private static SolidColorBrush monsterColor = new SolidColorBrush(Colors.Red);
         private static SolidColorBrush lootColor = new SolidColorBrush(Colors.Green);
         private static SolidColorBrush playerColor = new SolidColorBrush(Colors.Blue);
+
+        private static bool notAlone = false;
 
         public MainWindow()
         {
@@ -143,8 +146,7 @@ namespace Dungeon361
             AddExit();
             AddToDungeon(MONSTER_COUNT, monsterDict.Keys.AsQueryable().ToList());
             AddToDungeon(LOOT_COUNT, lootDict.Keys.AsQueryable().ToList());
-            SetUpHeaderBox();
-            SetUpInfoBox();
+            SetUpTextBoxes();
         }
 
         private void AddPlayer()
@@ -190,6 +192,13 @@ namespace Dungeon361
             }
         }
 
+        private void SetUpTextBoxes()
+        {
+            SetUpHeaderBox();
+            SetUpDirectionBox();
+            SetUpInfoBox();
+        }
+
         private void SetUpHeaderBox()
         {
             HeaderBar.Text = "Welcome to the Dungeon!!!";
@@ -198,18 +207,33 @@ namespace Dungeon361
             HeaderBar.VerticalAlignment = VerticalAlignment.Center;
             HeaderBar.HorizontalAlignment = HorizontalAlignment.Center;
             HeaderBar.SetValue(Grid.RowProperty, 0);
-            HeaderBar.SetValue(Grid.ColumnSpanProperty, MAX_COL - 1);
+            HeaderBar.SetValue(Grid.ColumnSpanProperty, MAX_COL);
+        }
+        private void SetUpDirectionBox()
+        {
+            DirectionBox.Text = "To explore the dungeon, use the mouse to click a room adjacent to your avitar! " +
+                "Remember that you can't walk through walls, so you'll only be able to access some rooms.";
+            DirectionBox.Foreground = new SolidColorBrush(Colors.Brown);
+            DirectionBox.FontSize = 14;
+            DirectionBox.VerticalAlignment = VerticalAlignment.Center;
+            DirectionBox.HorizontalAlignment = HorizontalAlignment.Center;
+            DirectionBox.SetValue(Grid.RowProperty, MAX_ROW + 1);
+            DirectionBox.SetValue(Grid.ColumnProperty, 1);
+            DirectionBox.SetValue(Grid.ColumnSpanProperty, MAX_COL - 2);
+
+            Engage.Click += new RoutedEventHandler(Engage_Click);
         }
         private void SetUpInfoBox()
         {
-            InfoBox.Text = "To explore the dungeon, use the mouse to click a room adjacent to your avitar! " +
-                "Remember that you can't walk through walls, so you'll only be able to access some rooms.";
+            InfoBox.Text = "You awaken confused, finding yourself in an empty room with no idea how you arrived here." +
+                           " You have one goal - find your way back out of wherever this is.";
             InfoBox.Foreground = new SolidColorBrush(Colors.Brown);
+            InfoBox.FontSize = 20;
             InfoBox.VerticalAlignment = VerticalAlignment.Center;
             InfoBox.HorizontalAlignment = HorizontalAlignment.Center;
             InfoBox.SetValue(Grid.RowProperty, MAX_ROW);
             InfoBox.SetValue(Grid.ColumnProperty, 1);
-            InfoBox.SetValue(Grid.ColumnSpanProperty, MAX_COL - 3);
+            InfoBox.SetValue(Grid.ColumnSpanProperty, MAX_COL - 2);
         }
 
         private void EnterRoom_Click(object sender, RoutedEventArgs e)
@@ -224,9 +248,63 @@ namespace Dungeon361
             {
                 LookItUpButtonUpdate(whatHaveWeHere);
             }
-            ToggleAdjacentRooms(room, true);
             MovePlayer(room);
-            room.IsHitTestVisible = true;
+            if(playerLoc != null)
+            {
+                ToggleAdjacentRooms(room, true);
+                room.IsHitTestVisible = true;
+            }
+            else
+            {
+                ToggleAdjacentRooms(room, false);
+                HeaderBarWin();
+            }
+            room.FontSize = notAlone ? 20 : 30;
+        }
+
+        private void HeaderBarWin()
+        {
+            HeaderBar.Text = "Congratulations, you escaped!!!";
+        }
+        private void HeaderBarLose()
+        {
+            HeaderBar.Text = "You have failed to escape the dungeon!!!";
+        }
+
+        private void Engage_Click(object sender, RoutedEventArgs e)
+        {
+            Button engagement = sender as Button;
+            if (engagement.Tag.ToString() == "EXIT")
+            {
+                this.Close();
+            }
+            else
+            {
+                string inTheRoom = playerLoc.Content.ToString();
+                if (inTheRoom.Contains(PLAYER + " | "))
+                {
+                    inTheRoom = inTheRoom.Remove(0, 6);
+                }
+                if (monsterDict.TryGetValue(inTheRoom, out _))
+                {
+                    InfoBox.Text = "Unfortunately you did not have the prowess to best the beast.  You have been slain.";
+                    playerLoc.Content = DEATH + " | " + inTheRoom;
+                    EngageButtonUpdate("EXIT");
+                    ToggleAdjacentRooms(playerLoc, false);
+                    HeaderBarLose();
+                    playerLoc.IsHitTestVisible = false;
+                    playerLoc = null;
+                }
+                else if (lootDict.TryGetValue(inTheRoom, out inTheRoom))
+                {
+                    InfoBox.Text = "You have collected a " + inTheRoom;
+                    playerLoc.Content = PLAYER;
+                    notAlone = false;
+                    playerLoc.Foreground = playerColor;
+                    playerLoc.FontSize = 30;
+                    EngageButtonUpdate("empty");
+                }
+            }
         }
 
         private void MovePlayer(Button room)
@@ -236,30 +314,47 @@ namespace Dungeon361
                 return;
             }
             ToggleAdjacentRooms(playerLoc, false);
-            room.Content = PLAYER + RoomContents(room);
+            room.Content = RoomContents(room);
             playerLoc.Content = null;
             playerLoc.Foreground = null;
-            playerLoc = room;
+            playerLoc = room.Content.ToString() == "EXIT" ? null : room;
         }
 
         private string RoomContents(Button room)
         {
-            if(room.Content == null)
+            if (room.Content == null)
             {
                 room.Foreground = playerColor;
+                EngageButtonUpdate("empty");
+                notAlone = false;
             }
-            else if(lootDict.ContainsKey(room.Content.ToString()))
+            else if(room.Content.ToString() == PLAYER)
             {
-                // TODO - add item to player inventory
-                room.Foreground = lootColor;
+                // TODO - inventory access
             }
-            else if(monsterDict.ContainsKey(room.Content.ToString()))
+            else if (room.Content.ToString() == "EXIT")
             {
-                // TODO - add battle mechanic and click commands
-                room.Foreground = monsterColor;
-                return " | " + room.Content.ToString();
+                EngageButtonUpdate("EXIT");
+                return "EXIT";
             }
-            return "";
+            else
+            {
+                if (lootDict.ContainsKey(room.Content.ToString()))
+                {
+                    room.Foreground = lootColor;
+                    EngageButtonUpdate("item");
+                    // TODO - add item to player inventory
+                }
+                else if (monsterDict.ContainsKey(room.Content.ToString()))
+                {
+                    room.Foreground = monsterColor;
+                    EngageButtonUpdate("monster");
+                    // TODO - implement full battle mechanic
+                }
+                notAlone = true;
+                return PLAYER + " | " + room.Content.ToString();
+            }
+            return PLAYER;
         }
 
         private void ToggleAdjacentRooms(Button aRoom, bool toggleChange)
@@ -346,6 +441,10 @@ namespace Dungeon361
         private string GetSymbolString(string lookingfor)
         {
             string foundit = "";
+            if(lookingfor == "EXIT")
+            {
+                return "EXIT";
+            }
             foreach (Dictionary<string, string> dict in dictList)
             {
                 if (dict.TryGetValue(lookingfor, out foundit))
@@ -366,18 +465,32 @@ namespace Dungeon361
 
         private void LookItUpButtonUpdate(string searchTerm)
         {
-            if (!LookItUp.IsEnabled)
-            {
-                LookItUp.IsEnabled = true;
-            }
+            LookItUp.IsHitTestVisible = true;
             LookUpText.Text = "Click to look up the meaning of " + searchTerm;
             LookItUp.Tag = searchTerm;
+        }
+
+        private void EngageButtonUpdate(string roomContentsType)
+        {
+            if (roomContentsType != "empty")
+            {
+                Engage.IsHitTestVisible = true;
+                Engage.Tag = roomContentsType;
+                EngageText.Text = roomContentsType == "monster" ? "Fight" :
+                                  roomContentsType == "item" ? "Pick Up" :
+                                  roomContentsType == "EXIT" ? "Leave" : "Error";
+            }
+            else
+            {
+                Engage.IsHitTestVisible = false;
+                EngageText.Text = "";
+            }
         }
 
         private void ConnectDictService()
         {
             LookItUp.Click += new RoutedEventHandler(LookUp_Click);
-            LookItUp.IsEnabled = false;
+            LookItUp.IsHitTestVisible = false;
         }
 
         private void LookUp_Click(object sender, RoutedEventArgs e)
@@ -385,7 +498,8 @@ namespace Dungeon361
             Button request = sender as Button;
             string searchTerm = request.Tag.ToString();
             string definition = CheckDict(searchTerm);
-            List<string> listOfDefinitions = JsonSerializer.Deserialize<List<string>>(definition); // candle broken, need exception handling
+            List<string> listOfDefinitions = JsonSerializer.Deserialize<List<string>>(definition);
+            // TODO - exception handling for corrupt or incomplete .json files from service
             DisplayDefinitions(searchTerm, listOfDefinitions);
         }
 

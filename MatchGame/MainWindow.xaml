@@ -26,17 +26,19 @@
             <RowDefinition Height="100"/>
             <RowDefinition Height="100"/>
             <RowDefinition Height="100"/>
-            <RowDefinition Height="100"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <Border x:Name="Exterior" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="10" Grid.RowSpan="6"/>
         <Border x:Name="Header" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="10" Grid.Row="0"/>
         <TextBlock x:Name="HeaderBar"></TextBlock>
-        <Border x:Name="Info" BorderThickness="3" BorderBrush="Black" Grid.ColumnSpan="9" Grid.Row="6"/>
+        <Border x:Name="Info" BorderThickness="3" BorderBrush="Black" Grid.Column="1" Grid.ColumnSpan="8" Grid.Row="6" Grid.RowSpan="2"/>
+        <TextBlock x:Name="DirectionBox" TextWrapping="Wrap"></TextBlock>
         <TextBlock x:Name="InfoBox" TextWrapping="Wrap"></TextBlock>
-        <Button x:Name="LookItUp" Background="tan" BorderBrush="Brown" BorderThickness="0" Grid.Column="10" Grid.Row="6">
+        <Button x:Name="LookItUp" Background="BlanchedAlmond" BorderBrush="Brown" BorderThickness="1" Grid.Column="10" Grid.Row="6" Grid.RowSpan="2">
             <TextBlock x:Name="LookUpText" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
         </Button>
-        <Button x:Name="Engage" Background="tan" BorderBrush="Brown" BorderThickness="0" Grid.Column="0" Grid.Row="6">
+        <Button x:Name="Engage" IsHitTestVisible="False" Background="BlanchedAlmond" BorderBrush="Brown" BorderThickness="1" Grid.Column="0" Grid.Row="6" Grid.RowSpan="2">
             <TextBlock x:Name="EngageText" TextWrapping="Wrap" TextAlignment="Center"></TextBlock>
         </Button>
     </Grid>
